@@ -2,13 +2,13 @@
 #include <ArduinoLowPower.h>
 #include <TinyGPS.h>
 
-#define WAITING_TIME 15
+#define WAITING_TIME 0
 #define GPS_PIN 2
 #define GPS_INFO_BUFFER_SIZE 128
 
 bool debug = false;
 
-TinyGPS gps;//GPS Object
+TinyGPS gps;
 
 //GPS data variables
 int year;
@@ -81,7 +81,8 @@ void SendSigfox(String data) {
   // Clears all pending interrupts
   SigFox.status();
   delay(1);
-  if (debug) SigFox.debug();
+  // we need debug to disable greedy sleep if (debug) SigFox.debug();
+  SigFox.debug();
   delay(100);
 
   SigFox.beginPacket();
@@ -153,13 +154,12 @@ String GetGPSpositon() {
   if (debug) Serial.println("GPS ON");
   digitalWrite(GPS_PIN, HIGH); //Turn GPS on
   Wait(1, false);
-  while (messages_count < 5000) {
+  while (messages_count < 500) {
     while (Serial1.available()) {
 
       int GPS_info_char = Serial1.read();
 
       if (GPS_info_char == '$') messages_count ++; // start of message. Counting messages.
-
 
       if (debug) {
         if (GPS_info_char == '$') { // start of message
@@ -209,7 +209,6 @@ String GetGPSpositon() {
           Serial.print("Velocidad(kmph): "); Serial.println(gps.f_speed_kmph());
           Serial.print("Satelites: "); Serial.println(gps.satellites());
           Serial.println();
-
         }
 
         gps.stats(&chars, &sentences, &failed_checksum);
@@ -264,5 +263,5 @@ void loop() {
   position_data = GetGPSpositon();
   SendSigfox(position_data);
 
-  Wait(WAITING_TIME, false);
+  //Wait(WAITING_TIME, false);
 }
