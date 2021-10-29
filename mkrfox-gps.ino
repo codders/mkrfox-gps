@@ -64,15 +64,15 @@ void Wait(int m, bool s) {
 
 /////////////////// Sigfox Send Data function ////////////////
 void SendSigfox(String data) {
+  // Remove EOL
+  data.trim();
+
   if (debug) {
     Serial.print("Sending: "); Serial.println(data);
     if (data.length() > 12) {
       Serial.println("Message too long, only first 12 bytes will be sent");
     }
   }
-
-  // Remove EOL
-  //data.trim();
 
   // Start the module
   SigFox.begin();
@@ -92,9 +92,11 @@ void SendSigfox(String data) {
   if (debug) {
     int ret = SigFox.endPacket(true);  // send buffer to SIGFOX network and wait for a response
     if (ret > 0) {
-      Serial.println("No transmission");
-    } else {
       Serial.println("Transmission ok");
+    } else {
+      Serial.println("No transmission");
+      Serial.println("Check the SigFox coverage in your area");
+      Serial.println("If you are indoor, check the 20dB coverage or move near a window");
     }
 
     Serial.println(SigFox.status(SIGFOX));
@@ -108,8 +110,6 @@ void SendSigfox(String data) {
       }
     } else {
       Serial.println("Could not get any response from the server");
-      Serial.println("Check the SigFox coverage in your area");
-      Serial.println("If you are indoor, check the 20dB coverage or move near a window");
     }
     Serial.println();
   } else {
